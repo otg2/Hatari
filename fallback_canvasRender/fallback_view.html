@@ -1,0 +1,914 @@
+<div id="blocker" style="display: none;"></div>
+<script>
+
+			var loadingScreen = {
+				scene: new THREE.Scene(),
+				camera: new THREE.PerspectiveCamera(90, 1280/720, 0.1, 100),
+				box: new THREE.Mesh(
+				new THREE.BoxGeometry(0.5,0.5,0.5),
+				new THREE.MeshBasicMaterial({ color:0xff0000 })
+				)
+			};
+			var loadingManager = null;
+			var RESOURCES_LOADED = false;
+			var _loadingScale = 0; // FIX THIS
+
+			var camera, sceneCss, sceneGL, rendererCss, rendererGL, stats, controls,  raycaster, mouse, interceptedObject;
+			//var staticMesh;
+      var logoMesh;
+			var _backMesh;
+      var video_Object;
+      var _currentlyHovering, _wasHovering;
+			var _videoX, _videoR;
+      var _videoToBePlayed;
+			var _menuBox;
+			var _clock;
+
+
+			var hatariSphere;
+			var _hatariInitRotation;
+			var _countDown_TIMER;
+
+			var _countDown;
+
+			var _extraGeometry,_extraMaterial, _cextraClick;
+			var _backExtraGeometry,_backExtraMaterial, _backExtraClick;
+
+
+			var xxx_animation, odyr_animation;
+			var neysluvara_animation;
+
+			var font;
+			var _selected_cameraToPos;
+
+
+			var upgradeTime;// =  _countDown_TIMER ;//_countDown_TIMER;
+			var seconds;// = upgradeTime;
+
+			var _menuDestionationVector = [
+				new THREE.Vector3(-5.5,0,0),
+				new THREE.Vector3(5.5,0,0),
+				new THREE.Vector3(0,0, 5.5),
+				new THREE.Vector3(0,0,-5.5),
+				new THREE.Vector3(0,3.5,0),
+				new THREE.Vector3(0,-3.5,0)
+			];
+
+      var fadeTo_bool = false;
+      var fadeTo_opacity = 1;
+      var fadeTo_dir = -1;
+
+      var _ACTION_STATE;
+			var _TOSET_STATE;
+
+			var MenuElement = function (aMaterial, x, y, z, ry, rx, rz, name, aSelectableText, anYOffset)
+			{
+				var menuItem;
+				var _setY = rx == 0 ? 7 : 11;
+
+				var menuItem_geometry = new THREE.PlaneGeometry( 11, _setY, 1, 1 );
+				var menuItem_material =new THREE.MeshBasicMaterial( { map: aMaterial});// aMaterial;// new THREE.MeshBasicMaterial( { map: anImage });// THREE.MeshBasicMaterial( { color: 0xff0000, map: texture_drum } );
+				menuItem = new THREE.Mesh( menuItem_geometry, menuItem_material );
+				menuItem.position.set(x,y,z);
+				menuItem.rotation.x = rx;
+				menuItem.rotation.y = ry;
+				menuItem.rotation.z = rz;
+				menuItem.name = name;
+
+				var geo = new THREE.EdgesGeometry( menuItem_geometry );
+				var mat = new THREE.LineBasicMaterial( { color: 0x000000, linewidth: 1 } );
+				var wireframe = new THREE.LineSegments( geo, mat );
+				menuItem.add(wireframe);
+
+				var mainColor = 0xc3c3c3;
+				if(aSelectableText == ".")mainColor = 0x000000;
+
+				var meshMaterial = new THREE.MultiMaterial( [
+				new THREE.MeshBasicMaterial( { color: mainColor} ),
+				new THREE.MeshBasicMaterial( { color: 0x000000 } )
+				] );
+				var text = new THREE.TextGeometry( aSelectableText, {
+
+				font: font,
+				size: 1.9,
+				height: 0.7,
+				curveSegments: 1
+
+				});
+
+
+				var clickMesh = new THREE.Mesh(text,meshMaterial);
+				clickMesh.visible = false;
+				clickMesh.name = "_CLICKABLE";
+				text.computeBoundingBox();
+
+				var centerX = -0.5 * ( text.boundingBox.max.x - text.boundingBox.min.x );
+				var centerY = -0.5 * ( text.boundingBox.max.y - text.boundingBox.min.y)+anYOffset;
+				var centerZ = -1.5 * ( text.boundingBox.max.z - text.boundingBox.min.z );
+				clickMesh.position.set(centerX, centerY, centerZ);
+
+				menuItem.add(clickMesh);
+
+				return menuItem;
+			}
+
+
+
+			function init() {
+
+				var _initScreenMode = window.orientation === 90 || window.orientation === -90;
+				var isMobile = false; //initiate as false
+				// device detection
+				if(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|ipad|iris|kindle|Android|Silk|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(navigator.userAgent)
+				    || /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(navigator.userAgent.substr(0,4)))
+						isMobile = true;
+
+        rendererGL = new THREE.CanvasRenderer({alpha:true});//({});,antialias:true
+				rendererGL.setPixelRatio( window.devicePixelRatio );
+				rendererGL.setSize( window.innerWidth, window.innerHeight );
+				rendererGL.setClearColor( 0x000000, 1 );
+
+
+				upgradeTime = dateDiffInDays();
+			 	seconds = upgradeTime;
+
+				var container = document.getElementById( 'container' );
+
+				camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+				if(isMobile)
+				{
+					if(_initScreenMode)	camera.position.z = 30;
+	        else	camera.position.z = 95; // 50
+				}
+				else camera.position.z = 50;
+
+
+        raycaster = new THREE.Raycaster();
+        mouse = new THREE.Vector2();
+
+        sceneGL = new THREE.Scene();
+
+        rendererGL.setSize(window.innerWidth, window.innerHeight);
+        rendererGL.domElement.style.position = 'absolute';
+        rendererGL.domElement.style.zIndex = 1;
+        rendererGL.domElement.style.top = 0;
+
+        document.body.appendChild(rendererGL.domElement);
+
+        controls = new THREE.OrbitControls( camera, rendererGL.domElement );
+				if(isMobile)
+				{
+					if(_initScreenMode)
+					{
+						controls.minDistance = 10;
+		        controls.maxDistance = 65;
+					}
+					else {
+						controls.minDistance = 10;
+		        controls.maxDistance = 95;
+					}
+				}
+				else {
+					controls.minDistance = 10;
+					controls.maxDistance = 65;
+				}
+
+
+				controls.enablePan = false;
+
+				loadingScreen.box.position.set(0,0,5);
+				loadingScreen.camera.lookAt(loadingScreen.box.position);
+				loadingScreen.scene.add(loadingScreen.box);
+
+				loadingManager = new THREE.LoadingManager();
+
+				var _textureLoader = new THREE.TextureLoader(loadingManager);
+				var _fontLoader = new THREE.FontLoader(loadingManager);
+
+				loadingManager.onProgress = function(item, loaded, total){
+					_loadingScale = loaded/7;
+				};
+
+				// init start intro
+				loadingManager.onLoad = function(){
+	        // INIT FADING
+					TweenLite.to(loadingScreen.box.scale, 1, {y:0, x:0, ease: Power0.easeNone, onComplete: function()
+					{
+						_ACTION_STATE = "_INTRO_STATE";
+						RESOURCES_LOADED = true;
+					}});
+
+				};
+
+
+				_colorPalette_Texture = _textureLoader.load("../image/colorPalette.png");
+				_colorPalette_Texture.minFilter = THREE.LinearFilter;
+
+
+        // CREATE IMAGE SPHERE
+				_imgSphere = _textureLoader.load("../image/pano_png.png");
+
+        _imgSphere.minFilter = THREE.LinearFilter;
+        hatariSphere = new THREE.Mesh( new THREE.SphereGeometry( 55, 32, 32 ), new THREE.MeshBasicMaterial( { map:  _imgSphere , transparent: true, opacity: 0.5, color: 0xFFFFFF} ) ); // ,transparent: true, color: 0x000000
+      	hatariSphere.scale.x = -1;
+				_hatariInitRotation = Math.random() * 360;
+				hatariSphere.rotation.y =_hatariInitRotation;
+      	hatariSphere.side = THREE.BackSide;
+        hatariSphere.name = "BACKGROUND_IMAGE";
+      	sceneGL.add( hatariSphere );
+
+
+				_clock = new THREE.Clock();
+
+				_fontLoader.load( '../typeface/HatariB_Regular.typeface.json', function ( response )
+				{
+
+					var meshMaterial = new THREE.MultiMaterial( [
+					new THREE.MeshBasicMaterial( { color: 0x4A380A} ),
+					new THREE.MeshBasicMaterial( { color: 0x696969 } )
+					] );
+
+					var _logoText = new THREE.TextGeometry( "hatari", {
+
+					font: response,
+					size: 7.5,
+					height: 3.5,
+					curveSegments: 5,
+					bevelThickness: 0.2, bevelSize: 0.2, bevelEnabled: true
+
+					});
+
+					_logoText.computeVertexNormals();
+					var triangleAreaHeuristics = 0.1 * ( 7.5 * 3.5 );
+
+					for ( var i = 0; i < _logoText.faces.length; i ++ )
+					{
+						var face = _logoText.faces[ i ];
+						if ( face.materialIndex == 1 )
+						{
+							for ( var j = 0; j < face.vertexNormals.length; j ++ )
+							{
+								face.vertexNormals[ j ].z = 0;
+								face.vertexNormals[ j ].normalize();
+							}
+
+							var va = _logoText.vertices[ face.a ];
+							var vb = _logoText.vertices[ face.b ];
+							var vc = _logoText.vertices[ face.c ];
+
+							var s = THREE.GeometryUtils.triangleArea( va, vb, vc );
+
+							if ( s > triangleAreaHeuristics ) {
+
+								for ( var j = 0; j < face.vertexNormals.length; j ++ ) {
+
+									face.vertexNormals[ j ].copy( face.normal );
+
+								}
+							}
+						}
+					}
+
+
+          logoMesh = new THREE.Mesh(_logoText,meshMaterial);
+          sceneGL.add(logoMesh);
+					_logoText.computeBoundingBox();
+
+					var centerX = -0.5 * ( _logoText.boundingBox.max.x - _logoText.boundingBox.min.x );
+					var centerY = -0.5 * ( _logoText.boundingBox.max.y - _logoText.boundingBox.min.y) ;
+					var centerZ = -0.5 * ( _logoText.boundingBox.max.z - _logoText.boundingBox.min.z );
+					logoMesh.position.set(centerX, centerY, centerZ);
+          logoMesh.name = "LOGO";
+
+					_extraGeometry = new THREE.PlaneGeometry( 60, 9 );
+					_extraMaterial = new THREE.MeshBasicMaterial( { color: 0x000000, transparent: true, opacity: 0 } );
+					_extraMaterial.side = THREE.DoubleSide;
+					_cextraClick = new THREE.Mesh( _extraGeometry, _extraMaterial );
+
+					_cextraClick.position.set(centerX*-1, centerY*-1, 2.5);
+					_cextraClick.name = "_CLICKABLE_LOGO";
+					logoMesh.add(_cextraClick);
+				})
+
+        // CREATE LOGO
+
+				_fontLoader.load( '../typeface/SKRAPPA_Condensed Bold.json', function ( response )
+				{
+          font = response;
+
+					var meshMaterial = new THREE.MultiMaterial( [
+					new THREE.MeshBasicMaterial( { color: 0xFCC302} ),
+					new THREE.MeshBasicMaterial( { color: 0x333333 } )
+					] );
+
+
+				var _BLACK = _textureLoader.load("../image/cube_sides/blck.jpg"); //THREE.ImageUtils.loadTexture('../image/cube_sides/blck.jpg');
+				_BLACK.minFilter = THREE.LinearFilter;
+        var _zPlus = _textureLoader.load("../image/cube_sides/z_plus.jpg"); //T THREE.ImageUtils.loadTexture('image/cube_sides/z_plus.jpg');
+        _zPlus.minFilter = THREE.LinearFilter;
+
+				_menuBox = new THREE.Object3D();//new THREE.Group();
+				//left
+				var odyr_objectTexture = _textureLoader.load( '../image/odyr10test.png' );
+				odyr_objectTexture.minFilter = THREE.LinearFilter;
+				odyr_animation = new TextureAnimator( odyr_objectTexture, 10, 1, 10, 75 ); // texture, #horiz, #vert, #total, duration.
+				var odyr_objectMaterial = new THREE.MeshBasicMaterial( { map: odyr_objectTexture } );
+				var odyr_objectGeometry = new THREE.PlaneGeometry(11, 7, 1, 1);
+				var odyr_object = new THREE.Mesh(odyr_objectGeometry, odyr_objectMaterial);
+				odyr_object.position.z = 0.005;
+				var _placeholder_Odyr = new MenuElement( _BLACK, 		-100, 0, 		0, 		-1* Math.PI / 2,	0,							0, "_MENU_VIDEO_R" , "ÓDÝR",0) ;
+				_placeholder_Odyr.add(odyr_object);
+				_menuBox.add(_placeholder_Odyr );
+				
+				//right
+				var sd_objectTexture = _textureLoader.load( '../image/sd_cover.png' ); // SD HERE
+				sd_objectTexture.minFilter = THREE.LinearFilter;
+				sd_animation = new TextureAnimator( sd_objectTexture, 10, 1, 10, 75 ); // texture, #horiz, #vert, #total, duration.
+				var sd_objectMaterial = new THREE.MeshBasicMaterial( { map: sd_objectTexture } );
+				var sd_objectGeometry = new THREE.PlaneGeometry(11, 7, 1, 1);
+				var sd_object = new THREE.Mesh(sd_objectGeometry, sd_objectMaterial);
+				sd_object.position.z = 0.005;
+				var _placeHolder_sd = new MenuElement( _BLACK, 	100, 	0, 		0, 		Math.PI / 2,			0,							0, "_MENU_VIDEO_SD","SPILLINGARDANS",0);
+				_placeHolder_sd.add(sd_object);
+				_menuBox.add( _placeHolder_sd );
+				
+				//front
+				var hatrid_objectTexture = _textureLoader.load( '../image/hatrid_cover.png' );
+				hatrid_objectTexture.minFilter = THREE.LinearFilter;
+				hatrid_animation = new TextureAnimator( hatrid_objectTexture, 10, 1, 10, 75 ); // texture, #horiz, #vert, #total, duration.
+				var hatrid_objectMaterial = new THREE.MeshBasicMaterial( { map: hatrid_objectTexture } );
+				var hatrid_objectGeometry = new THREE.PlaneGeometry(11, 7, 1, 1);
+				var hatrid_object = new THREE.Mesh(hatrid_objectGeometry, hatrid_objectMaterial);
+				hatrid_object.position.z = 0.005;
+				
+				var _initTimeLeft = timeLeftAsString();
+				var _initText = _initTimeLeft == "?" ? "?" :  "88:88:88:88"; // Sure looks confusing
+				
+				var _placeholder_hatrid = new MenuElement( _BLACK, 		0, 		0, 		100, 	0,								0,							0, "_MENU_VIDEO_H" , "HATRIÐ MUN SIGRA",0) ; // 
+				//var _placeholder_hatrid = new MenuElement( _BLACK, 		0, 		0, 		100, 	0,								0,							0, "NONE" , ".",0) ; 
+				var _countDown_Material = new THREE.MeshBasicMaterial( { color: 0xc3c3c3 } );
+				var _countDown_Geo = new THREE.TextGeometry(_initText, { size: 2, height: 0.7, curveSegments: 1, font: font, weight: "normal", style: "normal" });
+				_countDown_Geo.computeBoundingBox();
+				var centerX = -0.5 * ( _countDown_Geo.boundingBox.max.x - _countDown_Geo.boundingBox.min.x );
+				var centerY = -0.5* ( _countDown_Geo.boundingBox.max.y - _countDown_Geo.boundingBox.min.y);
+				_countDown = new THREE.Mesh(_countDown_Geo,meshMaterial);
+
+				_countDown.position.x = centerX;
+				_countDown.position.y = centerY;
+				_countDown.name = "_CLICKABLE";
+				
+				_placeholder_hatrid.add(hatrid_object);
+				//_placeholder_hatrid.children[1].add(_countDown);
+				//_placeholder_hatrid.children[1].geometry.dispose();
+				_menuBox.add(_placeholder_hatrid );
+
+				//back
+				var xxx_objectTexture = _textureLoader.load( '../image/x_cover.png' );
+				xxx_objectTexture.minFilter = THREE.LinearFilter;
+				xxx_animation = new TextureAnimator( xxx_objectTexture, 10, 1, 10, 75 ); // texture, #horiz, #vert, #total, duration.
+				var xxx_objectMaterial = new THREE.MeshBasicMaterial( { map: xxx_objectTexture } );
+				var xxx_objectGeometry = new THREE.PlaneGeometry(11, 7, 1, 1);
+				var xxx_object = new THREE.Mesh(xxx_objectGeometry, xxx_objectMaterial);
+				xxx_object.position.z = 0.005;
+				var _placeHolder_X = new MenuElement( _BLACK, 	0, 		0, 		-100, -1 * Math.PI, 		0, 							0, "_MENU_VIDEO_X","X",0);
+				_placeHolder_X.add(xxx_object);
+				_menuBox.add( _placeHolder_X );//"_MENU_VIDEO_X" , "X") );
+
+				//top
+				var neysluvara_objectTexture = _textureLoader.load( '../image/e_cover.png' );
+				//neysluvara_objectTexture.minFilter = THREE.LinearFilter;
+				neysluvara_animation = new TextureAnimator( neysluvara_objectTexture, 10, 1, 10, 75 ); // texture, #horiz, #vert, #total, duration.
+				var neysluvara_objectMaterial = new THREE.MeshBasicMaterial( { map: neysluvara_objectTexture } );
+				var neysluvara_objectGeometry = new THREE.PlaneGeometry(11, 11, 1, 1);
+				var neysluvara_object = new THREE.Mesh(neysluvara_objectGeometry, neysluvara_objectMaterial);
+				neysluvara_object.position.z = 0.005;
+				var _placeholder_neysluvara = new MenuElement(_BLACK, 		0, 		100, 	0, 		-1 * Math.PI, 		Math.PI/2, 			0, "_MENU_PLAYLIST_NEYSLUVARA","NEYSLUVARA EP",0)  ;
+				_placeholder_neysluvara.add(neysluvara_object);
+				_menuBox.add(_placeholder_neysluvara );
+				//_menuBox.add( new MenuElement( _BLACK, 		0, 		100, 	0, 		-1 * Math.PI, 		Math.PI/2, 			0, "NONE","",0) );//"_MENU_MERCH" , "Merch") );
+
+				//bottom
+				_menuBox.add( new MenuElement( _BLACK, 	0, 		-100, 0, 		-1 * Math.PI,			-1* Math.PI/2, 	0, "NONE","",0) );//"_MENU_MANIFESTO" , "Manifesto") );
+				_menuBox.position.set(0,0,0);
+				_menuBox.name = "_ITEM_MENUBOX";
+				sceneGL.add(_menuBox);
+				});
+
+        // ADD LISTENERS
+				window.addEventListener( 'resize', onWindowResize, false );
+        window.addEventListener( 'mousemove', onMouseMove, false );
+        window.addEventListener( 'mousedown', onClick, false );
+
+        $(document).ready(function() {
+            $(window).on('orientationchange', function(event) {
+
+                if(window.orientation === 90 || window.orientation === -90)
+								{
+									camera.position.z = 35;
+									controls.minDistance = 10;
+					        controls.maxDistance = 65;
+								}
+                else
+								{
+									camera.position.z = 95;
+									controls.minDistance = 10;
+					        controls.maxDistance = 95;
+								}
+            });
+        });
+
+}
+
+
+			function TextureAnimator(texture, tilesHoriz, tilesVert, numTiles, tileDispDuration)
+			{
+				this.tilesHorizontal = tilesHoriz;
+				this.tilesVertical = tilesVert;
+				this.numberOfTiles = numTiles;
+				texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+				texture.repeat.set( 1 / this.tilesHorizontal, 1 / this.tilesVertical );
+
+				this.tileDisplayDuration = tileDispDuration;
+
+				this.currentDisplayTime = 0;
+				this.currentTile = 0;
+
+				this.update = function( milliSec )
+				{
+					this.currentDisplayTime += milliSec;
+					while (this.currentDisplayTime > this.tileDisplayDuration)
+					{
+						this.currentDisplayTime -= this.tileDisplayDuration;
+						this.currentTile++;
+						if (this.currentTile == this.numberOfTiles)
+							this.currentTile = 0;
+						var currentColumn = this.currentTile % this.tilesHorizontal;
+						texture.offset.x = currentColumn / this.tilesHorizontal;
+						var currentRow = Math.floor( this.currentTile / this.tilesHorizontal );
+						texture.offset.y = currentRow / this.tilesVertical;
+					}
+				};
+			}
+
+			function onWindowResize()
+      {
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				rendererGL.setSize( window.innerWidth, window.innerHeight );
+			}
+
+      function onMouseMove( event )
+      {
+      	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+      	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+      }
+
+      function onClick( event ) {
+        if( interceptedObject.length == 0) return;
+        // If we click on video box, find its children
+				for(var i = 0 ; i < interceptedObject.length; i++)
+				{
+					// Traverse through all objects
+					var _closestClickObject = interceptedObject[i].object.name;
+					if(_closestClickObject=="_CLICKABLE" || _closestClickObject=="_CLICKABLE_EXTRA")
+					{
+					var _minDist = 1000;
+					var _index = 0;
+					for(var i = 0 ; i < _menuBox.children.length; i++)
+					{
+						var _dist = camera.position.angleTo(_menuBox.children[i].position);//.applyQuaternion(_menuBox.quaternion ));
+						if(_dist < _minDist)
+						{
+							_index = i;
+							_minDist = _dist;
+						}
+					}
+
+					var _newVec = _menuBox.children[_index].position.clone();
+					_TOSET_STATE = _menuBox.children[_index].name;
+					_newVec.multiplyScalar(4);
+					_selected_cameraToPos = _newVec;
+
+					_ACTION_STATE = "_INIT_SELECTED_MENU";
+				}
+
+				if(_closestClickObject=="_BACK" || _closestClickObject=="_CLICKABLE_BACK"   )
+				{
+					_backMesh.visible = false;
+
+					var _textObj_ToMove = _currentlyHovering.children[1];
+					var _yTo = -0.5 * ( _textObj_ToMove.geometry.boundingBox.max.y - _textObj_ToMove.geometry.boundingBox.min.y );
+
+					TweenLite.to(_textObj_ToMove.position, 0.5, {
+						y: _yTo,
+						ease: Power4.easeOut,// Bounce.easeOut,
+						onComplete: function(){
+							controls.enabled = true;
+							_ACTION_STATE = "_MENU_STATE";
+						}
+					});
+
+				}
+
+        if(_closestClickObject == "LOGO" ||_closestClickObject == "_CLICKABLE_LOGO")
+        {
+          _ACTION_STATE =  "_INIT_MENU_STATE"; //"_MENU_STATE";//
+					var _pos = logoMesh.position;
+					TweenLite.to(_pos, 4, {
+						x : -3,
+						y : 0,
+						ease: Power4.easeOut// Bounce.easeOut,
+
+					});
+					var _scale = logoMesh.scale;
+					TweenLite.to(_scale, 4, {
+						x : 0.1,
+						y : 0.1,
+						z : 0.1,
+						ease: Power4.easeOut// Bounce.easeOut,
+					});
+        }
+			}
+      }
+    function faceObject(aMain, aViewer, aPos)
+    {
+      var zCamVec = aPos;
+      var position = aMain.localToWorld(zCamVec);
+      camera.updateProjectionMatrix();
+      aViewer.position.set(position.x, position.y, position.z);
+      aViewer.lookAt(aMain.position);
+    }
+
+
+		function dateDiffInDays()
+		{
+			var _today = new Date();
+			var _openingDay =  new Date(2017,04,28);
+		  return (_openingDay.getTime() - _today.getTime())/1000;
+		}
+
+		function digitAsTwoDigits(aDigit)
+		{
+			if (aDigit < 10) {
+					return  "0" + aDigit;
+			}
+			return aDigit;
+		}
+
+		function timeLeftAsString()
+		{
+			if(seconds < 0) return "?";
+
+			var days        = Math.floor(seconds/24/60/60);
+			var hoursLeft   = Math.floor((seconds) - (days*86400));
+			var hours       = Math.floor(hoursLeft/3600);
+			var minutesLeft = Math.floor((hoursLeft) - (hours*3600));
+			var minutes     = Math.floor(minutesLeft/60);
+			var remainingSeconds = Math.floor(seconds % 60);
+
+			return digitAsTwoDigits(days) + ":" + digitAsTwoDigits(hours) + ":" + digitAsTwoDigits(minutes) + ":" + digitAsTwoDigits(remainingSeconds);
+		}
+
+			var _introRotation_Perc;
+
+			var _percRate = 0.00001;
+			var _gainRate = -0.00001;
+			var _addGain =  0.00001;
+
+			var _test = 0;
+			var _timePassed = 0;
+
+			function animate() {
+
+				//TODO: Make fkn fsm
+				// Ignore all CG logic when whatching 2dVideo
+				if(_ACTION_STATE == "_VIDEO_STATE")
+				{
+					requestAnimationFrame(animate);
+					return;
+				}
+
+				// While loading, display simple loading graphics
+				if(RESOURCES_LOADED == false )
+				{
+					requestAnimationFrame(animate);
+
+					loadingScreen.box.scale.x = 30 * _loadingScale;
+					rendererGL.render(loadingScreen.scene, loadingScreen.camera);
+					return;
+				}
+
+				var delta = _clock.getDelta();
+
+				_test+= delta;
+				_timePassed += delta*0.025;
+
+				if(_test > 1)
+				{
+				    var _timeRemaining = timeLeftAsString();
+						_countDown.geometry.dispose();
+						_countDown.geometry = new THREE.TextGeometry( _timeRemaining , { size: 5, height: 0.7, curveSegments: 1, font: font, weight: "normal", style: "normal" });
+
+				    if (seconds == 0) {
+							// TODO: DisplayVIDEO
+				    } else {
+				        seconds--;
+				    }
+					_test = 0;
+
+				}
+
+				_percRate = _percRate + _gainRate;
+				_gainRate += _addGain;
+
+				if((_percRate > 0.5 && _addGain > 0) || (_percRate < 0 && _addGain < 0 ))
+				{
+					_gainRate *= -1;
+					_addGain = 0.00001;
+					_addGain *= -1;
+
+				}
+
+				requestAnimationFrame( animate );
+        var _normalized;
+
+				if(_ACTION_STATE == "_INTRO_STATE")
+				{
+					//_hatariInitRotation += delta*0.04;
+					//hatariSphere.rotation.y = _hatariInitRotation;
+				}
+
+				if(_ACTION_STATE == "_INIT_SELECTED_MENU")
+				{
+					camera.position.lerp(_selected_cameraToPos,0.05);
+					if(camera.position.angleTo(_selected_cameraToPos) < 0.05)
+					{
+						//Switch case here
+						if(_TOSET_STATE.includes("VIDEO"))
+						{
+							var _textObj_Remove = _currentlyHovering.children[1];
+							var _zFrom = -1.5 * ( _textObj_Remove.geometry.boundingBox.max.z - _textObj_Remove.geometry.boundingBox.min.z );
+
+							TweenLite.to(_textObj_Remove.position, 0.5, {
+								z: _zFrom,
+								ease: Power4.easeOut//Bounce.easeOut
+							});
+
+		          _videoToBePlayed =  _TOSET_STATE.replace('MENU','FRAME');
+
+							_ACTION_STATE = "_INIT_VIDEO_STATE";
+
+							_TOSET_STATE = null;;//
+						}
+						//TODO: Use later when menu is used
+						else if(_TOSET_STATE.includes("PLAYLIST"))
+						{
+							var _textObj_Remove = _currentlyHovering.children[1];
+							var _zFrom = -1.5 * ( _textObj_Remove.geometry.boundingBox.max.z - _textObj_Remove.geometry.boundingBox.min.z );
+
+							TweenLite.to(_textObj_Remove.position, 0.5, {
+								z: _zFrom,
+								ease: Power4.easeOut//Bounce.easeOut
+							});
+
+							_videoToBePlayed =  _TOSET_STATE.replace('MENU','PLAYLIST');
+
+							fadeTo_bool = true;
+							fadeTo_dir = 1;
+							// _MENU_PLAYLIST_NEYSLUVARA
+							_ACTION_STATE = "_INIT_PLAYLIST_STATE";
+
+							_TOSET_STATE = null;;//
+						}
+						else if(false)
+						{
+
+								var _textObj_ToMove = _currentlyHovering.children[1];
+								TweenLite.to(_textObj_ToMove.position, 0.5, {
+									y: 3.5,
+									ease: Power4.easeOut
+								});
+								controls.enabled = false;
+
+								faceObject(camera,_backMesh,new THREE.Vector3(-13,4,-17));
+
+								_backMesh.visible = true;
+								_infoToBeViewed = _TOSET_STATE.replace('MENU','VIEW');
+								_TOSET_STATE = null;
+								_ACTION_STATE = "_INIT_VIEW_STATE";
+						}
+						else _ACTION_STATE = "_MENU_STATE";
+					}
+				}
+
+        if(_ACTION_STATE != "_INTRO_STATE" && _ACTION_STATE != "_VIDEO_STATE")
+        {
+
+					var _zPObject = _menuBox.children[2].position;
+					var _zPlus_Video = new THREE.Vector3(_zPObject.x,_zPObject.y,_zPObject.z);
+					_zPlus_Video.applyQuaternion(_menuBox.quaternion);
+
+          _introRotation_Perc = (96.5 + _menuBox.children[5].position.y)/100;// (100.01 - dice.position.y)/100;
+					var _angleToFront = camera.position.angleTo(_zPlus_Video);
+					xxx_animation.update(1000 * delta);
+					odyr_animation.update(1000 * delta);
+					neysluvara_animation.update(1000 * delta);
+
+        }
+
+
+				if(_ACTION_STATE == "_MENU_STATE")
+				{
+					var _minDist = 1000;
+					var _index = 0;
+					for(var i = 0 ; i < _menuBox.children.length; i++)
+					{
+						var _dist = camera.position.angleTo(_menuBox.children[i].position);//.applyQuaternion(_menuBox.quaternion ));
+						if(_dist < _minDist)
+						{
+							_index = i;
+							_minDist = _dist;
+						}
+					}
+					if(_currentlyHovering != _menuBox.children[_index])
+					{
+						if(_currentlyHovering != null)
+						{
+							var _textObj_Remove = _currentlyHovering.children[1];
+							var _zFrom = -1.5 * ( _textObj_Remove.geometry.boundingBox.max.z - _textObj_Remove.geometry.boundingBox.min.z );
+
+							TweenLite.to(_textObj_Remove.position, 0.5, {
+						    z: _zFrom,
+						    ease: Power4.easeIn,// Bounce.easeOut,
+								onComplete: function(){
+									_cextraClick.name = "_CLICKABLE_EXTRA";
+									_textObj_Remove.remove(_cextraClick);
+									_textObj_Remove.visible = false;
+								}
+						  });
+						}
+
+						_currentlyHovering = _menuBox.children[_index];
+						var _textObj = _currentlyHovering.children[1];
+						var _zTo = 2 * ( _textObj.geometry.boundingBox.max.z - _textObj.geometry.boundingBox.min.z );
+
+						_textObj.visible = true;
+						_textObj.add(_cextraClick);
+
+						TweenLite.to(_textObj.position, 0.5, {
+					    z: _zTo,
+					    ease: Power4.easeOut// Bounce.easeOut
+					  });
+					}
+				}
+        raycaster.setFromCamera( mouse, camera );
+      	interceptedObject = raycaster.intersectObjects( sceneGL.children , true);
+
+        if(_ACTION_STATE == "_INIT_MENU_STATE")
+        {
+          // TODO: Add tween
+					_menuBox.rotation.y = Math.PI*2 * (_introRotation_Perc/0.93);
+
+
+					for(var i = 0 ; i < _menuBox.children.length; i++)
+					{
+						var _currentMenuPos = _menuBox.children[i].position;
+						_currentMenuPos.lerp(_menuDestionationVector[i],0.05);
+						if(i == _menuBox.children.length-1)
+						{
+							if(_currentMenuPos.distanceTo(_menuDestionationVector[i]) < 0.005)
+							{
+								for(var j = 0 ; j < _menuBox.children.length; j++)
+								{
+									var _dV = _menuDestionationVector[j];
+									_menuBox.children[j].position.set(_dV.x,_dV.y,_dV.z);
+								}
+
+								sceneGL.remove(logoMesh);
+
+
+								sceneGL.remove(_cextraClick);
+								_cextraClick = null;
+								_extraGeometry = new THREE.PlaneGeometry( 6, 5, 1, 1 );
+								_extraMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, transparent: true, opacity: 0 } );
+								_extraMaterial.side = THREE.DoubleSide;
+								_extraGeometry.computeBoundingBox();
+
+								var centerX = 0.5 * ( _extraGeometry.boundingBox.max.x - _extraGeometry.boundingBox.min.x );
+								var centerY = 0.5 * ( _extraGeometry.boundingBox.max.y - _extraGeometry.boundingBox.min.y);
+								_cextraClick = new THREE.Mesh( _extraGeometry, _extraMaterial );
+								_cextraClick.name = "_CLICKABLE_EXTRA";
+								_cextraClick.position.set(centerX,centerY,1);
+		            _ACTION_STATE = "_MENU_STATE";
+								_menuBox.rotation.y = 0;
+
+							}
+
+						}
+					}
+        }
+
+				if(_ACTION_STATE == "_INIT_VIEW_STATE")
+				{
+				}
+				if(_ACTION_STATE == "_INIT_PLAYLIST_STATE")
+				{
+					fadeTo_bool = false;
+					var _canvas = $( "canvas" ).get( 0 );
+					_canvas.style.visibility='hidden';
+
+					switch (_videoToBePlayed) {
+						case "_PLAYLIST_PLAYLIST_NEYSLUVARA":
+							location.href = "../neysluvara";
+							break;
+						}
+				}
+
+            if(_ACTION_STATE== "_INIT_VIDEO_STATE")
+            {
+							var _backImg = $( "#backImg" )[0];
+							_backImg.style.visibility='visible';
+
+							_backImg.onclick = function()
+							{
+								var _backImg = $( "#backImg" )[0];
+								_backImg.style.visibility='hidden';
+
+								var _canvas = $( "canvas" ).get( 0 );
+								_canvas.style.visibility='visible';
+
+								var _iFrame = $( "#videoPlayer" )[0];
+								_iFrame.src = "";
+
+								_ACTION_STATE = "_INIT_BACKVIDEO";
+			          fadeTo_bool = true;
+			          fadeTo_dir = -1;
+							}
+
+							var _canvas = $( "canvas" ).get( 0 );
+							_canvas.style.visibility='hidden';
+
+							var _iFrame = $( "#videoPlayer" )[0];
+							console.log();
+							switch (_videoToBePlayed) {
+								case "_FRAME_VIDEO_R":
+									_backImg.src = "../image/back_img_odyr.png"
+									_iFrame.src = "https://www.youtube.com/embed/dsTl6K7VCsE";
+
+									break;
+								case "_FRAME_VIDEO_X":
+									_backImg.src = "../image/back_img_x.png"
+									_iFrame.src = "https://www.youtube.com/embed/0dnkpD_grOo";
+									break;
+case "_FRAME_VIDEO_SD":
+									_backImg.src = "../image/back_img_x.png"
+									_iFrame.src = "https://www.youtube.com/embed/LS4YLbgVucg";
+									break;
+case "_FRAME_VIDEO_H":
+									_backImg.src = "../image/back_img_odyr.png"
+									_iFrame.src = "https://www.youtube.com/embed/eVbShUW6QBM";
+									break;
+
+
+
+
+							}
+
+              _ACTION_STATE = "_VIDEO_STATE";
+            }
+
+            if(_ACTION_STATE== "_INIT_BACKVIDEO")
+            {
+
+							var _textObj = _currentlyHovering.children[1];
+							var _zTo = -0.5 * ( _textObj.geometry.boundingBox.max.z - _textObj.geometry.boundingBox.min.z );
+
+							_textObj.visible = true;
+
+							TweenLite.to(_textObj.position, 0.5, {
+						    z: _zTo,
+						    ease: Power4.easeOut,// Bounce.easeOut,
+
+								onComplete: function(){controls.enabled = true;}
+						  });
+
+              _ACTION_STATE = "_MENU_STATE";
+            }
+
+
+
+
+
+
+				controls.update();
+        rendererGL.render( sceneGL, camera );
+			}
+
+
+			window.onload = function()
+			{
+				init();
+				animate();
+			}
+		</script>

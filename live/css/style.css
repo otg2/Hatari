@@ -1,0 +1,325 @@
+body{
+  background-image: url("../images/Matti_To_Berlin_0942.png");
+  background-color: red;
+  height: 800px; /* You must set a specified height */
+  background-position: center; /* Center the image */
+  background-repeat: no-repeat; /* Do not repeat the image */
+  background-size: cover; /* Resize the background image to cover the entire container */
+  overflow-x: hidden;
+  font-family: 'MO', serif;
+  font-size: 20px;
+  letter-spacing: 0.2em;
+  color:white;
+}
+
+/* Fonts
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+
+@font-face {
+    font-family: 'tourFont';
+    src: url("../fonts/CoFo_Pe.woff") format('woff');
+}
+
+@font-face {
+    font-family: 'MO';
+    src: url("../fonts/MO.woff") format('woff');
+}
+
+/* Clearing
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+
+/* Self Clearing Goodness */
+.container:after,
+.row:after,
+.cf:after {
+  content: "";
+  display: table;
+  clear: both; }
+
+
+/* Links
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+
+/* unvisited link */
+a:link {
+  color: white; text-decoration: none;
+}
+
+/* visited link */
+a:visited {
+  color: white;
+}
+
+/* mouse over link */
+a:hover {
+  color: white;   text-decoration: underline;
+}
+
+/* selected link */
+a:active {
+  color: white;
+}
+	
+
+/* Layout
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+
+.infoWrap{
+ display:block;
+ color:white;
+ position:relative;
+ left:13%;
+ max-width: 80%;
+ text-align: center;
+ vertical-align: middle;
+ color:white;
+ margin-top:5%;
+}
+
+.outer {
+   padding-bottom: 40px;
+   height: 60%;
+   width: 100%;
+   margin-left: auto;
+   margin-right: auto;
+}
+
+.middle {
+   vertical-align: middle;
+   position: relative;
+   /*border:2px solid blue;*/
+   text-align:center;
+}
+
+.inner {
+   margin-left: auto;
+   margin-right: auto;
+   width:100%;
+   text-align:center;
+}
+
+.absFix{
+ display:block;
+ height:900px;
+ width: 100%;
+}
+
+#top{
+  clear:both;
+  position: absolute;
+  right: 0;
+  top: 0;
+  left: 0;
+  padding: 1rem;
+}
+
+#left{
+  float:left;
+}
+
+#right{
+  float:right;
+}
+
+#bottom{
+  clear:both;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 1rem;
+}
+
+
+/* EVENTS
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+
+.event{
+	margin-bottom: 20px;
+}
+
+.place,
+.name{
+	font-family: "tourFont", sans-serif; 
+}
+
+.place,
+.name,
+.date{
+	color:white;
+}
+
+.divider{
+	display; none;
+}
+
+@media only screen and (min-width: 900px) {
+
+	.event{
+    font-size: 16px;
+		margin-bottom: 5px;
+	}
+
+	.place,
+	.name,
+	.date{
+		display: inline;
+    white-space: nowrap;
+	}
+
+	.date{
+		width:17.5%;
+		/*height:90%;*/
+		float:left;
+		text-align:left;
+	}
+
+	.place{
+		max-width:35%;
+		/*height:90%;*/
+		float:left;
+		text-align:left;
+	}
+
+	.name{
+		max-width:47.5%;
+		/*height:90%;*/
+		float:right;
+		text-align:right;
+	}
+}
+
+
+@media only screen and (min-width: 1000px) {
+
+  .event{
+    font-size: 20px;
+    margin-bottom: 5px;
+  }
+
+  .date{
+    width:15%;
+    /*height:90%;*/
+    float:left;
+    text-align:left;
+  }
+
+  .place{
+    max-width:35%;
+    /*height:90%;*/
+    float:left;
+    text-align:left;
+  }
+
+  .name{
+    max-width:55%;
+    /*height:90%;*/
+    float:right;
+    text-align:right;
+  }
+}
+
+/* ANIMATION
+–––––––––––––––––––––––––––––––––––––––––––––––––– */		
+
+.spinForw {
+ -webkit-animation-name: spin;
+ -webkit-animation-duration: 40000ms;
+ -webkit-animation-iteration-count: infinite;
+ -webkit-animation-timing-function: linear;
+ -moz-animation-name: spin;
+ -moz-animation-duration: 40000ms;
+ -moz-animation-iteration-count: infinite;
+ -moz-animation-timing-function: linear;
+ -ms-animation-name: spin;
+ -ms-animation-duration: 40000ms;
+ -ms-animation-iteration-count: infinite;
+ -ms-animation-timing-function: linear;
+ -o-transition: rotate(3600deg);
+}
+@-ms-keyframes spin {
+   from { -ms-transform: rotate(0deg); }
+   to { -ms-transform: rotate(360deg); }
+}
+@-moz-keyframes spin {
+   from { -moz-transform: rotate(0deg); }
+   to { -moz-transform: rotate(360deg); }
+}
+@-webkit-keyframes spin {
+   from { -webkit-transform: rotate(0deg); }
+   to { -webkit-transform: rotate(360deg); }
+}
+@keyframes spin {
+   from {
+       transform:rotate(0deg);
+   }
+   to {
+       transform:rotate(360deg);
+   }
+}
+
+.spinBack{
+ -webkit-animation-name: spin_back;
+ -webkit-animation-duration: 40000ms;
+ -webkit-animation-iteration-count: infinite;
+ -webkit-animation-timing-function: linear;
+ -moz-animation-name: spin_back;
+ -moz-animation-duration: 40000ms;
+ -moz-animation-iteration-count: infinite;
+ -moz-animation-timing-function: linear;
+ -ms-animation-name: spin_back;
+ -ms-animation-duration: 40000ms;
+ -ms-animation-iteration-count: infinite;
+ -ms-animation-timing-function: linear;
+ -o-transition: rotate(3600deg);
+}
+@-ms-keyframes spin_back {
+   from { -ms-transform: rotate(360deg); }
+   to { -ms-transform: rotate(0deg); }
+}
+@-moz-keyframes spin_back {
+   from { -moz-transform: rotate(360deg); }
+   to { -moz-transform: rotate(0deg); }
+}
+@-webkit-keyframes spin_back {
+   from { -webkit-transform: rotate(360deg); }
+   to { -webkit-transform: rotate(0deg); }
+}
+@keyframes spin_back {
+   from {
+       transform:rotate(360deg);
+   }
+   to {
+       transform:rotate(0deg);
+   }
+}
+.hover {
+ -webkit-animation-name: hover;
+ -webkit-animation-duration: 4000ms;
+ -webkit-animation-iteration-count: infinite;
+ -webkit-animation-timing-function:ease-in-out;
+ -webkit-animation-direction: alternate-reverse;
+ -moz-animation-name: hover;
+ -moz-animation-duration: 4000ms;
+ -moz-animation-iteration-count: infinite;
+ -moz-animation-timing-function: ease-in-out;
+ -moz-animation-direction: alternate-reverse;
+ -ms-animation-name: hover;
+ -ms-animation-duration: 4000ms;
+ -ms-animation-iteration-count: infinite;
+ -ms-animation-timing-function: ease-in-out;
+ -ms-animation-direction: alternate-reverse;
+margin:5%;
+}
+@-ms-keyframes hover {
+   from { -ms-transform: translate(0px,0px); }
+   to { -ms-transform: translate(0px,10px); }
+}
+@-moz-keyframes hover {
+   from { -moz-transform: translate(0px,0px); }
+   to { -moz-transform: translate(0px,10px); }
+}
+@-webkit-keyframes hover {
+   from { -webkit-transform: translate(0px,0px); }
+   to { -webkit-transform: translate(0px,10px); }
+}

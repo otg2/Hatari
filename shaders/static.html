@@ -1,0 +1,52 @@
+<script id="staticVertexShader" type="x-shader/x-vertex">
+    varying vec2 vUv;
+    varying vec4 wPos;
+    void main() {
+        wPos = modelMatrix * vec4(position, 1.0);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        vUv = uv;
+    }
+</script>
+<script id="staticFragmentShader" type="x-shader/x-fragment">
+    uniform vec3 wLightPos;
+    uniform int timeVary;
+    uniform float time;
+    uniform float gran;
+    varying vec4 wPos;
+    varying vec2 vUv;
+    float rand(vec2 co) {
+        return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);
+    }
+    float adjRand(vec2 co, float gran) {
+        return rand(floor(vUv * gran) / gran);
+    }
+    void main() {
+        vec2 co;
+        float height;
+        if (timeVary == 1) {
+            co = vUv + vec2(time, time);
+            height = rand(co);
+        } else {
+            co= vUv;
+            height = adjRand(co, gran);
+        }
+
+        float r;
+        /*  ... normal map not obvious
+        float eps = 0.0001;
+        float hUU = adjRand(vec2(co[0] + eps, co[1]), gran);
+        float hVV = adjRand(vec2(co[0], co[1] + eps), gran);
+
+        // tangent space normal
+        vec3 uu = vec3(eps, 0, hUU - height);
+        vec3 vv = vec3(0, eps, hVV - height);
+        vec3 nn = normalize(cross(uu, vv));
+        vec3 wL = normalize(wLightPos - wPos.xyz);
+        float ndotl = dot(wL, nn);
+        r = ndotl;
+        r = ndotl*height;
+    */
+        r = height;
+        gl_FragColor = vec4(r, r, r, 1);
+    }
+</script>

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en" >
+    <head>
+        <title>HATARI</title>
+        <meta charset="utf-8">
+        <meta property="og:title"              content="HATARI" />
+        <meta property="og:description"        content="Svefngenglar í móki vanans" />
+        <meta property="og:image"              content="../image/share_img.jpg" />
+        <link rel="shortcut icon" href="../images/Fav_svika.ico">
+
+        <style>
+        #container { display:block; }
+    			body { margin: 0; background-color: black; overflow:hidden}
+    			canvas { width: 100%; height: 100% }
+
+    		</style>
+    </head>
+
+    <body>
+      <div id="videoContainer">
+
+
+        <img id="backImg"  style="position:absolute;right:0px;z-Index:10;visibility:hidden; padding:10px;"/>
+        <div id="frameHolder" style="height:100%; margin:auto;width:100%">
+          <iframe id="videoPlayer" src="" width="1920"
+          height="1080" frameborder="0" style="position:absolute;width:100%;height:100%;left:0" allowfullscreen webkitallowfullscreen mozallowfullscreen oallowfullscreen msallowfullscreen>
+          </iframe>
+        </div>
+      </div>
+        <div id="container"></div>
+    </body>
+
+    <script
+  src="https://code.jquery.com/jquery-3.1.1.min.js"
+  integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+  crossorigin="anonymous"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.1/plugins/CSSPlugin.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.1/easing/EasePack.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.1/TweenLite.min.js"></script>
+
+    <script src="../js/three.min.js"></script>
+    <script src="../js/Detector.js"></script>
+		<script src="../js/GeometryUtils.js"></script>
+    <script src="../js/OrbitControls.js"></script>
+    <script src="../js/renderers/CSS3DRenderer.js"></script>
+    <script src="../js/renderers/CanvasRenderer.js"></script>
+    <script src="../js/renderers/Projector.js"></script>
+		<script src="../js/stats.min.js"></script>
